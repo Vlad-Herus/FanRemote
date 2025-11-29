@@ -1,0 +1,6 @@
+@FanRemote_HostAddress = http://localhost:5155
+
+GET {{FanRemote_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -11,7 +11,7 @@ public class GpuTempService : IGpuTempService
     private readonly NvidiaSmiOptions _nvidiaSmiOptions;
     private readonly ILogger<GpuTempService> _logger;
 
-    public GpuTempService(IOptions<NvidiaSmiOptions> nvidiaSmiOptions, ILogger<GpuTempService> logger)
+    public GpuTempService(IOptionsSnapshot<NvidiaSmiOptions> nvidiaSmiOptions, ILogger<GpuTempService> logger)
     {
         _nvidiaSmiOptions = nvidiaSmiOptions?.Value ?? throw new ArgumentNullException(nameof(nvidiaSmiOptions));
         _logger = logger;

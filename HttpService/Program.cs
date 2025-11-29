@@ -31,7 +31,7 @@ public partial class Program
 
         app.UseHttpsRedirection();
 
-        app.MapGet("/tempState", async (IGpuTempService gpuTempService, IOptions<FanControlOptions> fanControlOptions) =>
+        app.MapGet("/tempState", async (IGpuTempService gpuTempService, IOptionsSnapshot<FanControlOptions> fanControlOptions) =>
         {
             var temp = await gpuTempService.GetGpuTempInC();
 

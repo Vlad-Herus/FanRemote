@@ -6,5 +6,5 @@ public class FanControlOptions
 
 public class NvidiaSmiOptions()
 {
-    public string MvidiaSmiExeLocation { get; set; }
+    public string? MvidiaSmiExeLocation { get; set; }
 }

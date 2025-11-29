@@ -9,14 +9,22 @@ public interface IGpuTempService
 public class GpuTempService : IGpuTempService
 {
     private readonly NvidiaSmiOptions _nvidiaSmiOptions;
+    private readonly ILogger<GpuTempService> _logger;
 
-    public GpuTempService(IOptions<NvidiaSmiOptions> nvidiaSmiOptions)
+    public GpuTempService(IOptions<NvidiaSmiOptions> nvidiaSmiOptions, ILogger<GpuTempService> logger)
     {
         _nvidiaSmiOptions = nvidiaSmiOptions?.Value ?? throw new ArgumentNullException(nameof(nvidiaSmiOptions));
+        _logger = logger;
     }
 
     public async Task<int> GetGpuTempInC()
     {
+        if (File.Exists(_nvidiaSmiOptions.MvidiaSmiExeLocation) is false)
+        {
+            _logger.LogError($"{nameof(_nvidiaSmiOptions.MvidiaSmiExeLocation)} is misconfigured");
+            return 0;
+        }
+
         Process process = new Process();
         process.StartInfo.FileName = _nvidiaSmiOptions.MvidiaSmiExeLocation;
         process.StartInfo.Arguments = "--query-gpu=temperature.gpu --format=csv,noheader"; // Optional arguments

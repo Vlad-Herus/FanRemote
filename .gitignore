@@ -52,3 +52,10 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
+
+# Platform IO
+.pioenvs
+.piolibdeps
+.clang_complete
+.gcc-flags.json
+.pio

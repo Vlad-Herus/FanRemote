@@ -1,3 +1,4 @@
+#include "driver/ledc.h"
 #include <Arduino.h>
 #include <HTTPClient.h>
 #include <WiFi.h>
@@ -13,7 +14,13 @@ void setup() {
   Serial.begin(115200);
 
   pinMode(OUT_PIN, OUTPUT);
-  digitalWrite(OUT_PIN, LOW);
+
+  if (ledcAttach(13, 25000, 8) == false) {
+    Serial.println("Failed to attach 13");
+  }
+
+  ledcWrite(OUT_PIN, 0);
+
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
 
@@ -42,9 +49,9 @@ void loop() {
     Serial.println(httpResponseCode);
 
     if (httpResponseCode == 429) {
-      digitalWrite(OUT_PIN, HIGH);
+      ledcWrite(OUT_PIN, 150);
     } else {
-      digitalWrite(OUT_PIN, LOW);
+      ledcWrite(OUT_PIN, 0);
     }
 
     delay(10000);

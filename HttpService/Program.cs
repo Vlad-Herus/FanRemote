@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 
 public partial class Program
 {
+    private static bool Triggered = false;
     private static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
@@ -35,10 +36,18 @@ public partial class Program
         {
             var temp = await gpuTempService.GetGpuTempInC();
 
-            if (temp <= fanControlOptions.Value.GpuTempCeiling)
-                return Results.StatusCode(200);
+            if (temp >= fanControlOptions.Value.GpuTempCeiling)
+            {
+                Triggered = true;
+                return Results.StatusCode(429);
+            }
+            else if (Triggered && temp > fanControlOptions.Value.GpuTempRecoveryThreshold)
+                return Results.StatusCode(429); 
             else
-                return Results.StatusCode(429); // too many requests
+            {
+                Triggered = false;
+                return Results.StatusCode(200); 
+            }
         })
         .WithName("tempState");
 

@@ -49,11 +49,22 @@ void loop() {
     Serial.println(httpResponseCode);
 
     if (httpResponseCode == 429) {
-      ledcWrite(OUT_PIN, 150);
+      String payload = http.getString();
+      long speed = payload.toInt();
+      if (speed >= 0 && speed <= 255) {
+        Serial.print("Speed: ");
+        Serial.println(payload);
+
+        ledcWrite(OUT_PIN, speed);
+      } else {
+        Serial.print("Speed not parsed: ");
+        Serial.println(payload);
+      }
     } else {
       ledcWrite(OUT_PIN, 0);
     }
 
+    http.end();
     delay(10000);
   }
 }

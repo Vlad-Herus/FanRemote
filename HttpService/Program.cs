@@ -1,3 +1,4 @@
+using System.Net.Mime;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -39,10 +40,10 @@ public partial class Program
             if (temp >= fanControlOptions.Value.GpuTempCeiling)
             {
                 Triggered = true;
-                return Results.StatusCode(429);
+                return FanOn(fanControlOptions);
             }
             else if (Triggered && temp > fanControlOptions.Value.GpuTempRecoveryThreshold)
-                return Results.StatusCode(429); 
+                return FanOn(fanControlOptions);
             else
             {
                 Triggered = false;
@@ -52,5 +53,14 @@ public partial class Program
         .WithName("tempState");
 
         app.Run();
+    }
+
+    private static IResult FanOn(IOptionsSnapshot<FanControlOptions> fanControlOptions)
+    {
+        return Results.Content(
+            fanControlOptions.Value.FanSpeed.ToString(),
+            System.Net.Mime.MediaTypeNames.Text.Plain,
+            null,
+            429);
     }
 }

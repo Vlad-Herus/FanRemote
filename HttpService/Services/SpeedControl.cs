@@ -20,11 +20,14 @@ public class SpeedControl : ISpeedControl
             return 0;
         }
 
+        var target = _fanControlOptions.GpuTempCeiling;
+        Func<int, int> getError = input => input - target;
         var currentTemp = temps.First();
+        var previousTemp = temps.Skip(1).First();
 
-        var proportional = currentTemp - _fanControlOptions.GpuTempCeiling;
-        var integral = temps.Sum(temp => temp - _fanControlOptions.GpuTempCeiling);
-        var derivative = temps.First() - temps.Skip(1).First();
+        var proportional = getError(currentTemp);
+        var integral = temps.Sum(temp => getError(temp));
+        var derivative = getError(currentTemp) - getError(previousTemp);
 
 
 

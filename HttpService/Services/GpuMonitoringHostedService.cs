@@ -1,6 +1,6 @@
 namespace FanRemote.Services
 {
-    public class GpuMonitoringHostedService : IHostedService
+    public class GpuMonitoringHostedService : BackgroundService
     {
         private readonly IGpuTempHistoryStore _gpuTempHistoryStore;
         private readonly IGpuTempSensor _gpuTempSensor;
@@ -12,7 +12,13 @@ namespace FanRemote.Services
             _gpuTempSensor = gpuTempSensor;
         }
 
-        public async Task StartAsync(CancellationToken cancellationToken)
+        public override Task StopAsync(CancellationToken cancellationToken)
+        {
+            _stopping = true;
+            return Task.CompletedTask;
+        }
+
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             while (_stopping is false)
             {
@@ -21,12 +27,6 @@ namespace FanRemote.Services
 
                 await Task.Delay(10 * 1000);
             }
-        }
-
-        public Task StopAsync(CancellationToken cancellationToken)
-        {
-            _stopping = true;
-            return Task.CompletedTask;
         }
     }
 }

@@ -8,9 +8,9 @@ namespace FanRemote.Services
         private readonly NvidiaSmiOptions _nvidiaSmiOptions;
         private readonly ILogger<GpuTempSensor> _logger;
 
-        public GpuTempSensor(IOptionsSnapshot<NvidiaSmiOptions> nvidiaSmiOptions, ILogger<GpuTempSensor> logger)
+        public GpuTempSensor(IOptionsMonitor<NvidiaSmiOptions> nvidiaSmiOptions, ILogger<GpuTempSensor> logger)
         {
-            _nvidiaSmiOptions = nvidiaSmiOptions?.Value ?? throw new ArgumentNullException(nameof(nvidiaSmiOptions));
+            _nvidiaSmiOptions = nvidiaSmiOptions?.CurrentValue ?? throw new ArgumentNullException(nameof(nvidiaSmiOptions));
             _logger = logger;
         }
 

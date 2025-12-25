@@ -1,0 +1,47 @@
+{
+    "version": "2.0.0",
+    "tasks":
+    [
+        {
+            "label": "build Frontend",
+            "type":"shell",
+            "command":"npm",
+            "args": [
+                "--prefix",
+                "ClientApp",
+                "run",
+                "build"
+            ],
+            "group":{
+                "kind":"build"
+            }
+        },
+        {
+            "label": "build Backend",
+            "type":"shell",
+            "command":"dotnet",
+            "args": [
+                "build",
+                "HttpService"
+            ],
+            "group":{
+                "kind":"build"
+            }
+        },
+        {
+            "label": "run UI",
+            "type":"shell",
+            "dependsOn":"build Frontend",
+            "command":"dotnet",
+            "args": [
+                "run",
+                "--project",
+                "HttpService"
+            ],
+            "group":{
+                "kind":"build",
+                "isDefault": true
+            }
+        }
+    ]
+}

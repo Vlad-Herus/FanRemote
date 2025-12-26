@@ -1,46 +1,68 @@
 {
     "version": "2.0.0",
-    "tasks":
-    [
+    "tasks": [
+        {
+            "label": "SaveAllFiles",
+            "command": "${command:workbench.action.files.saveAll}",
+            "type": "shell",
+            "group": {
+                "kind": "build"
+            }
+        },
         {
             "label": "build Frontend",
-            "type":"shell",
-            "command":"npm",
+            "dependsOn": "SaveAllFiles",
+            "type": "shell",
+            "command": "npm",
             "args": [
                 "--prefix",
                 "ClientApp",
                 "run",
                 "build"
             ],
-            "group":{
-                "kind":"build"
+            "group": {
+                "kind": "build"
             }
         },
         {
             "label": "build Backend",
-            "type":"shell",
-            "command":"dotnet",
+            "dependsOn": "SaveAllFiles",
+            "type": "shell",
+            "command": "dotnet",
             "args": [
                 "build",
                 "HttpService"
             ],
-            "group":{
-                "kind":"build"
+            "group": {
+                "kind": "build"
+            }
+        },
+        {
+            "label": "build All",
+            "dependsOn": "build Frontend",
+            "type": "shell",
+            "command": "dotnet",
+            "args": [
+                "build",
+                "HttpService"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
             }
         },
         {
             "label": "run UI",
-            "type":"shell",
-            "dependsOn":"build Frontend",
-            "command":"dotnet",
+            "type": "shell",
+            "dependsOn": "build Frontend",
+            "command": "dotnet",
             "args": [
                 "run",
                 "--project",
                 "HttpService"
             ],
-            "group":{
-                "kind":"build",
-                "isDefault": true
+            "group": {
+                "kind": "build",
             }
         }
     ]

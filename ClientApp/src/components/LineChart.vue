@@ -9,6 +9,7 @@ import Chart from 'chart.js/auto'; // 'auto' registers all components automatica
 
 const chartCanvas = ref(null);
 var myCHart = null;
+var eTag = null;
 
 onMounted(() => {
     myCHart = new Chart(chartCanvas.value, {
@@ -45,6 +46,28 @@ function addDataPoint(label, newData) {
     }
 }
 
+function pollPid() {
+    try {
+        fetch('data', {
+            method: 'GET',
+            headers: {
+                'ETag': eTag
+            },
+        })
+            .then(async response => {
+                eTag = response.headers.get('etag');
+                var response = await response.json();
+                console.log(response);
+            });
+
+    }
+    catch (error) {
+        console.log(error);
+    }
+
+    setTimeout(pollPid, 1000); // Delay of 0 ms puts it at the end of the current call stack
+}
+pollPid();
 </script>
 
 <script>

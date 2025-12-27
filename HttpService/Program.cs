@@ -74,6 +74,8 @@ public partial class Program
             var newEtag = pidCacheService.GetETag(filtered);
             if (newEtag is not null)
                 response.Headers.Append(HeaderNames.ETag, newEtag);
+            else
+                response.Headers.Append(HeaderNames.ETag, eTag);
 
             return filtered;
         })

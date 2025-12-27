@@ -10,3 +10,17 @@ public class NvidiaSmiOptions()
 {
     public string? MvidiaSmiExeLocation { get; set; }
 }
+
+public class PidOptions
+{
+    public double Proportional { get; set; }
+    public double Integral { get; set; }
+    public double Derivative { get; set; }
+}
+
+public class PidConfiguration
+{
+    public double Proportional { get; set; }
+    public double Integral { get; set; }
+    public double Derivative { get; set; }
+}

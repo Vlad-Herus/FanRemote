@@ -1,15 +1,22 @@
+using FanRemote.Interfaces;
+
 namespace FanRemote.Services
 {
     public class GpuMonitoringHostedService : BackgroundService
     {
-        private readonly IGpuTempHistoryStore _gpuTempHistoryStore;
-        private readonly IGpuTempSensor _gpuTempSensor;
+        private readonly IPidHistoryStore _pidHistoryStore;
+        private readonly IPidCalculator _pidCalculator;
+        private readonly ISpeedControl _speedControl;
         private bool _stopping;
 
-        public GpuMonitoringHostedService(IGpuTempHistoryStore gpuTempHistoryStore, IGpuTempSensor gpuTempSensor)
+        public GpuMonitoringHostedService(
+            IPidHistoryStore pidHistoryStore, 
+            IPidCalculator pidCalculator,
+            ISpeedControl speedControl)
         {
-            _gpuTempHistoryStore = gpuTempHistoryStore;
-            _gpuTempSensor = gpuTempSensor;
+            _pidHistoryStore = pidHistoryStore;
+            _pidCalculator = pidCalculator;
+            _speedControl = speedControl;
         }
 
         public override Task StopAsync(CancellationToken cancellationToken)
@@ -22,10 +29,14 @@ namespace FanRemote.Services
         {
             while (_stopping is false)
             {
-                var temp = await _gpuTempSensor.GetGpuTempInC();
-                _gpuTempHistoryStore.LogTemp(temp);
+                var pid = await _pidCalculator.Calculate(_pidHistoryStore.GetTemps(), stoppingToken);
+                pid.Speed = _speedControl.GetSpeed(pid);
+                _pidHistoryStore.LogTemp(pid);
 
-                await Task.Delay(10 * 1000);
+                if (pid.InError)
+                    await Task.Delay(1 * 1000);
+                else
+                    await Task.Delay(10 * 1000);
             }
         }
     }

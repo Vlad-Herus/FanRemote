@@ -1,36 +1,21 @@
+using FanRemote.Interfaces;
+using FanRemote.Model;
 using FanRemote.Services;
-using Microsoft.Extensions.Options;
 
 public class SpeedControl : ISpeedControl
 {
-    private readonly IGpuTempHistoryStore _gpuTempHistoryStore;
-    private readonly FanControlOptions _fanControlOptions;
+    private readonly PidConfiguration _pidConfiguration;
 
-    public SpeedControl(IGpuTempHistoryStore gpuTempHistoryStore, IOptionsSnapshot<FanControlOptions> fanControlOptions)
+    public SpeedControl(PidConfiguration pidConfiguration)
     {
-        _gpuTempHistoryStore = gpuTempHistoryStore;
-        _fanControlOptions = fanControlOptions.Value;
+        _pidConfiguration = pidConfiguration;
     }
 
-    public int GetSpeed()
+    public int GetSpeed(PidData pidData)
     {
-        var temps = _gpuTempHistoryStore.GetTemps();
-        if (temps == null || temps.Count() < 2)
-        {
-            return 0;
-        }
-
-        var target = _fanControlOptions.GpuTempCeiling;
-        Func<int, int> getError = input => input - target;
-        var currentTemp = temps.First();
-        var previousTemp = temps.Skip(1).First();
-
-        var proportional = getError(currentTemp);
-        var integral = temps.Sum(temp => getError(temp));
-        var derivative = getError(currentTemp) - getError(previousTemp);
-
-
-
-        return 0;
+        var result = pidData.Proportional * _pidConfiguration.Proportional;
+        result += pidData.Derivative * _pidConfiguration.Derivative;
+        result += pidData.Integral * _pidConfiguration.Integral;
+        return (int)result;
     }
 }

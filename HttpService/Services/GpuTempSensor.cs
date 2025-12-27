@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using FanRemote.Interfaces;
 using Microsoft.Extensions.Options;
 
 namespace FanRemote.Services
@@ -14,7 +15,7 @@ namespace FanRemote.Services
             _logger = logger;
         }
 
-        public async Task<int> GetGpuTempInC()
+        public async Task<int> GetGpuTempInC(CancellationToken cancellationToken)
         {
             if (File.Exists(_nvidiaSmiOptions.MvidiaSmiExeLocation) is false)
             {
@@ -33,8 +34,8 @@ namespace FanRemote.Services
             try
             {
                 process.Start();
-                string output = process.StandardOutput.ReadToEnd();
-                process.WaitForExit(); // Optionally wait for the process to complete
+                string output = await process.StandardOutput.ReadToEndAsync();
+                await process.WaitForExitAsync(cancellationToken); // Optionally wait for the process to complete
 
                 if (int.TryParse(output, out int gpuTemp))
                 {

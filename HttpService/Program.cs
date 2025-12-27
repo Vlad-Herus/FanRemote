@@ -1,5 +1,8 @@
+using FanRemote.Interfaces;
 using FanRemote.Services;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Microsoft.Net.Http.Headers;
 using Serilog;
 
 public partial class Program
@@ -20,19 +23,29 @@ public partial class Program
         builder.Services.AddOpenApi();
 
         builder.Services.AddTransient<IGpuTempSensor, GpuTempSensor>();
-        builder.Services.AddScoped<ISpeedControl, SpeedControl>();
-        builder.Services.AddSingleton<IGpuTempHistoryStore, GpuTempHistoryStore>();
+        builder.Services.AddTransient<IPidCalculator, PidCalculator>();
+        builder.Services.AddTransient<ISpeedControl, SpeedControl>();
+        builder.Services.AddTransient<IPidCacheService, PidCacheService>();
+        builder.Services.AddSingleton<IPidHistoryStore, PidHistoryStore>();
         builder.Services.AddHostedService<GpuMonitoringHostedService>();
 
         builder.Services.AddOptions<FanControlOptions>()
             .Bind(builder.Configuration.GetSection(nameof(FanControlOptions)));
         builder.Services.AddOptions<NvidiaSmiOptions>()
             .Bind(builder.Configuration.GetSection(nameof(NvidiaSmiOptions)));
+        builder.Services.AddOptions<PidOptions>()
+            .Bind(builder.Configuration.GetSection(nameof(PidOptions)));
+
+        builder.Services.AddSingleton<PidConfiguration>();
 
 
         var app = builder.Build();
-        
-        
+
+        var pidOptions = app.Services.GetRequiredService<IOptions<PidOptions>>();
+        var pidConfiguration = app.Services.GetRequiredService<PidConfiguration>();
+        pidConfiguration.Proportional = pidOptions.Value.Proportional;
+        pidConfiguration.Integral = pidOptions.Value.Integral;
+        pidConfiguration.Derivative = pidOptions.Value.Derivative;
 
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
@@ -46,10 +59,25 @@ public partial class Program
 
         app.MapGet("/tempState", async (ISpeedControl speedControl) =>
         {
-            var speed = speedControl.GetSpeed();
-            return FanResult(speed);
+            return 0;
         })
         .WithName("tempState");
+
+        app.MapGet("/data", async (
+            IPidHistoryStore pidHistoryStore,
+            IPidCacheService pidCacheService,
+            [FromHeader(Name = "ETag")] string? eTag,
+            HttpResponse response) =>
+        {
+            var temps = pidHistoryStore.GetTemps();
+            var filtered = pidCacheService.Filter(temps, eTag);
+            var newEtag = pidCacheService.GetETag(filtered);
+            if (newEtag is not null)
+                response.Headers.Append(HeaderNames.ETag, newEtag);
+
+            return filtered;
+        })
+        .WithName("data");
 
         app.Run();
     }

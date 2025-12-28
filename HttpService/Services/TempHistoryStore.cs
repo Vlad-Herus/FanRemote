@@ -3,12 +3,12 @@ using FanRemote.Model;
 
 namespace FanRemote.Services
 {
-    public class PidHistoryStore : IPidHistoryStore
+    public class TempHistoryStore : ITempHistoryStore
     {
-        private const int MaxValues = 6;
+        private const int MaxValues = 60;
 
-        List<PidData> _Datas = new();
-        public void LogTemp(PidData data)
+        List<TempData> _Datas = new();
+        public void LogTemp(TempData data)
         {
             lock (_Datas)
             {
@@ -20,7 +20,7 @@ namespace FanRemote.Services
             }
         }
 
-        public IEnumerable<PidData> GetTemps()
+        public IEnumerable<TempData> GetTemps()
         {
             lock (_Datas)
             {

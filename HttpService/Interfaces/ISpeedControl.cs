@@ -5,5 +5,5 @@ namespace FanRemote.Interfaces;
 public interface ISpeedControl
 {
     // Returns fan speed between 0 and 255
-    public int GetSpeed(PidData pidData);
+    public int GetSpeed(TempData TempData);
 }

@@ -4,18 +4,18 @@ namespace FanRemote.Services
 {
     public class GpuMonitoringHostedService : BackgroundService
     {
-        private readonly IPidHistoryStore _pidHistoryStore;
-        private readonly IPidCalculator _pidCalculator;
+        private readonly ITempHistoryStore _TempHistoryStore;
+        private readonly ITempDataCalculator _TempDataCalculator;
         private readonly ISpeedControl _speedControl;
         private bool _stopping;
 
         public GpuMonitoringHostedService(
-            IPidHistoryStore pidHistoryStore, 
-            IPidCalculator pidCalculator,
+            ITempHistoryStore TempHistoryStore, 
+            ITempDataCalculator TempDataCalculator,
             ISpeedControl speedControl)
         {
-            _pidHistoryStore = pidHistoryStore;
-            _pidCalculator = pidCalculator;
+            _TempHistoryStore = TempHistoryStore;
+            _TempDataCalculator = TempDataCalculator;
             _speedControl = speedControl;
         }
 
@@ -29,9 +29,9 @@ namespace FanRemote.Services
         {
             while (_stopping is false)
             {
-                var pid = await _pidCalculator.Calculate(_pidHistoryStore.GetTemps(), stoppingToken);
+                var pid = await _TempDataCalculator.Calculate(_TempHistoryStore.GetTemps(), stoppingToken);
                 pid.Speed = _speedControl.GetSpeed(pid);
-                _pidHistoryStore.LogTemp(pid);
+                _TempHistoryStore.LogTemp(pid);
 
                 if (pid.InError)
                     await Task.Delay(1 * 1000);

@@ -2,13 +2,13 @@ using FanRemote.Model;
 
 namespace FanRemote.Interfaces;
 
-public interface IPidHistoryStore
+public interface ITempHistoryStore
 {
-    void LogTemp(PidData data);
+    void LogTemp(TempData data);
 
     /// <summary>
     /// History of GPU temp change. 
     /// </summary>
     /// <returns>First item is the most recent reading. Last item is the oldest.</returns>
-    IEnumerable<PidData> GetTemps();
+    IEnumerable<TempData> GetTemps();
 }

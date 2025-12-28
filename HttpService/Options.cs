@@ -1,9 +1,8 @@
 public class FanControlOptions
 {
-    public int GpuTempCeiling { get; set; }
-    public int GpuTempRecoveryThreshold { get; set; }
-    public int CpuTempCeiling { get; set; }
-    public int FanSpeed { get; set; }
+    public int TempFloor { get; set; }
+    public int TempCeiling { get; set; }
+    public int StepPercentage { get; set; }
 }
 
 public class NvidiaSmiOptions()
@@ -11,16 +10,7 @@ public class NvidiaSmiOptions()
     public string? MvidiaSmiExeLocation { get; set; }
 }
 
-public class PidOptions
+public class FanControlConfiguration
 {
-    public double Proportional { get; set; }
-    public double Integral { get; set; }
-    public double Derivative { get; set; }
-}
-
-public class PidConfiguration
-{
-    public double Proportional { get; set; }
-    public double Integral { get; set; }
-    public double Derivative { get; set; }
+    public int? ForcedSpeed = null;
 }

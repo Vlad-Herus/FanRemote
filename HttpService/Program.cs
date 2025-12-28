@@ -23,29 +23,23 @@ public partial class Program
         builder.Services.AddOpenApi();
 
         builder.Services.AddTransient<IGpuTempSensor, GpuTempSensor>();
-        builder.Services.AddTransient<IPidCalculator, PidCalculator>();
-        builder.Services.AddTransient<ISpeedControl, SpeedControl>();
-        builder.Services.AddTransient<IPidCacheService, PidCacheService>();
-        builder.Services.AddSingleton<IPidHistoryStore, PidHistoryStore>();
+        builder.Services.AddTransient<ITempDataCalculator, TempDataCalculator>();
+        builder.Services.AddSingleton<ISpeedControl, SpeedControl>();
+        builder.Services.AddTransient<IETagService, ETagService>();
+        builder.Services.AddSingleton<ITempHistoryStore, TempHistoryStore>();
         builder.Services.AddHostedService<GpuMonitoringHostedService>();
 
         builder.Services.AddOptions<FanControlOptions>()
             .Bind(builder.Configuration.GetSection(nameof(FanControlOptions)));
         builder.Services.AddOptions<NvidiaSmiOptions>()
             .Bind(builder.Configuration.GetSection(nameof(NvidiaSmiOptions)));
-        builder.Services.AddOptions<PidOptions>()
-            .Bind(builder.Configuration.GetSection(nameof(PidOptions)));
+        builder.Services.AddOptions<FanControlOptions>()
+            .Bind(builder.Configuration.GetSection(nameof(FanControlOptions)));
 
-        builder.Services.AddSingleton<PidConfiguration>();
+        builder.Services.AddSingleton<FanControlConfiguration>();
 
 
         var app = builder.Build();
-
-        var pidOptions = app.Services.GetRequiredService<IOptions<PidOptions>>();
-        var pidConfiguration = app.Services.GetRequiredService<PidConfiguration>();
-        pidConfiguration.Proportional = pidOptions.Value.Proportional;
-        pidConfiguration.Integral = pidOptions.Value.Integral;
-        pidConfiguration.Derivative = pidOptions.Value.Derivative;
 
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
@@ -57,21 +51,26 @@ public partial class Program
         app.UseSpaStaticFiles();
         app.UseHttpsRedirection();
 
-        app.MapGet("/tempState", async (ISpeedControl speedControl) =>
+        app.MapGet("/tempState", (ITempHistoryStore store) =>
         {
-            return 0;
+            var current = store
+            .GetTemps()
+            .OrderByDescending(pid => pid.Timestamp)
+            .FirstOrDefault();
+
+            return FanResult(current?.Speed ?? 0);
         })
         .WithName("tempState");
 
         app.MapGet("/data", async (
-            IPidHistoryStore pidHistoryStore,
-            IPidCacheService pidCacheService,
+            ITempHistoryStore TempHistoryStore,
+            IETagService ETagService,
             [FromHeader(Name = "ETag")] string? eTag,
             HttpResponse response) =>
         {
-            var temps = pidHistoryStore.GetTemps();
-            var filtered = pidCacheService.Filter(temps, eTag);
-            var newEtag = pidCacheService.GetETag(filtered);
+            var temps = TempHistoryStore.GetTemps();
+            var filtered = ETagService.Filter(temps, eTag);
+            var newEtag = ETagService.GetETag(filtered);
             if (newEtag is not null)
                 response.Headers.Append(HeaderNames.ETag, newEtag);
             else

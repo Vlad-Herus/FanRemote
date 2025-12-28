@@ -3,12 +3,12 @@ using FanRemote.Model;
 using FanRemote.Services;
 using Microsoft.Extensions.Options;
 
-public class PidCalculator : IPidCalculator
+public class TempDataCalculator : ITempDataCalculator
 {
     private readonly IGpuTempSensor _gpuTempSensor;
     private readonly FanControlOptions _fanControlOptions;
 
-    public PidCalculator(
+    public TempDataCalculator(
         IGpuTempSensor gpuTempSensor,
         IOptionsMonitor<FanControlOptions> fanControlOptions)
     {
@@ -16,25 +16,17 @@ public class PidCalculator : IPidCalculator
         _fanControlOptions = fanControlOptions.CurrentValue;
     }
 
-    public async Task<PidData> Calculate(IEnumerable<PidData> historicalData, CancellationToken cancellationToken)
+    public async Task<TempData> Calculate(IEnumerable<TempData> historicalData, CancellationToken cancellationToken)
     {
         var pids = historicalData.OrderByDescending(pid => pid.Timestamp);
         var temp = await _gpuTempSensor.GetGpuTempInC(cancellationToken);
-        var target = _fanControlOptions.GpuTempCeiling;
+        var target = _fanControlOptions.TempFloor;
 
-        Func<PidData, int> getErrorPid = input => input.Temp - target;
-        Func<int, int> getError = input => input - target;
-
-        return new PidData
+        return new TempData
         {
             Timestamp = DateTimeOffset.UtcNow,
             Temp = temp,
-            Target = target,
-            Proportional = getError(temp),
-            Integral = pids.Sum(pid => getErrorPid(pid)),
-            Derivative = pids.Any()
-                 ? getError(temp) - getErrorPid(pids.First())
-                 : 0
+            Target = target
         };
     }
 }

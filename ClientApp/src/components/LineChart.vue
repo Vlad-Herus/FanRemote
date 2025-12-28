@@ -10,15 +10,28 @@ import Chart from 'chart.js/auto'; // 'auto' registers all components automatica
 const chartCanvas = ref(null);
 var myCHart = null;
 var eTag = null;
+var labels = [];
+var tempDataset = { label: 'Temp', data: [] };
+var targetDataset = { label: 'Target', data: [] };
+var speedDataset = { label: 'Speed', data: [] };
 
 onMounted(() => {
     myCHart = new Chart(chartCanvas.value, {
-        type: 'bar',
+        type: 'line',
         data: {
-            labels: ['Red', 'Blue', 'Yellow'],
-            datasets: [{ label: 'Votes', data: [12, 19, 3] }]
+            labels: labels,
+            datasets: [
+                tempDataset,
+                targetDataset,
+                speedDataset
+            ]
         },
         options: { responsive: true }
+    });
+
+    myCHart.data.datasets.forEach((dataset) => {
+        if (dataset.label === 'Temp')
+            tempDataset = dataset;
     });
 });
 
@@ -26,12 +39,14 @@ function addDataPoint(label, newData) {
     try {
         console.log(myCHart.data);
         // Push new label
-        myCHart.data.labels.push(label);
+        labels.push(label);
 
-        // Push new data for each dataset
-        myCHart.data.datasets.forEach((dataset) => {
-            dataset.data.push(newData);
-        });
+        tempDataset.data.push(newData);
+
+        //Push new data for each dataset
+        // myCHart.data.datasets.forEach((dataset) => {
+        //     dataset.data.push(newData);
+        // });
         myCHart.update();
         //refreshMyChart();
         // Important: Tell Chart.js to update the chart
@@ -47,23 +62,36 @@ function addDataPoint(label, newData) {
 }
 
 function pollPid() {
-    try {
-        fetch('data', {
-            method: 'GET',
-            headers: {
-                'ETag': eTag
-            },
+    fetch('data', {
+        method: 'GET',
+        headers: {
+            'ETag': eTag
+        },
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            eTag = response.headers.get('etag');
+            return response.json();
         })
-            .then(async response => {
-                eTag = response.headers.get('etag');
-                var response = await response.json();
-                console.log(response);
+        .then(data => {
+            data.sort((a, b) => new Date(a.timestamp).getTime() > new Date(b.timestamp).getTime());
+            data.forEach(item => {
+                var date = new Date(item.timestamp);
+                var minutes = String(date.getMinutes()).padStart(2, '0');
+                var seconds = String(date.getSeconds()).padStart(2, '0');
+                labels.push(minutes + ':' + seconds);
+                tempDataset.data.push(item.temp);
+                targetDataset.data.push(item.target);
+                speedDataset.data.push(item.speed);
+                myCHart.update();
             });
-
-    }
-    catch (error) {
-        console.log(error);
-    }
+        })
+        .catch(error => {
+            // Handle network errors or the error thrown in the .then() block
+            console.error('Fetch error:', error.message);
+        });
 
     setTimeout(pollPid, 1000); // Delay of 0 ms puts it at the end of the current call stack
 }

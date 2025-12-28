@@ -6,24 +6,24 @@ using Microsoft.VisualBasic;
 
 namespace FanRemote.Services;
 
-public class PidCacheService : IPidCacheService
+public class ETagService : IETagService
 {
-    public IEnumerable<PidData> Filter(IEnumerable<PidData> pidDatas, string? eTag)
+    public IEnumerable<TempData> Filter(IEnumerable<TempData> TempDatas, string? eTag)
     {
         if (string.IsNullOrWhiteSpace(eTag))
-            return pidDatas;
+            return TempDatas;
 
-        var matchingItem = pidDatas.FirstOrDefault(data => GetETag(data) == eTag);
+        var matchingItem = TempDatas.FirstOrDefault(data => GetETag(data) == eTag);
 
         if (matchingItem is null)
-            return pidDatas;
+            return TempDatas;
         else
-            return pidDatas.Where(data => data.Timestamp > matchingItem.Timestamp);
+            return TempDatas.Where(data => data.Timestamp > matchingItem.Timestamp);
     }
 
-    public string? GetETag(IEnumerable<PidData> pidDatas)
+    public string? GetETag(IEnumerable<TempData> TempDatas)
     {
-        var latest = pidDatas
+        var latest = TempDatas
             .OrderByDescending(data => data.Timestamp)
             .FirstOrDefault();
 
@@ -33,9 +33,9 @@ public class PidCacheService : IPidCacheService
             return GetETag(latest);
     }
 
-    private string GetETag(PidData pidData)
+    private string GetETag(TempData TempData)
     {
-        byte[] bytes = GetBytes(pidData.Timestamp);
+        byte[] bytes = GetBytes(TempData.Timestamp);
         var hash = MD5.Create().ComputeHash(bytes);
         var eTag = Convert.ToBase64String(hash);
 

@@ -1,13 +1,10 @@
 namespace FanRemote.Model
 {
-    public class PidData
+    public class TempData
     {
         public DateTimeOffset Timestamp { get; set; }
         public int Temp { get; set; }
         public int Target { get; set; }
-        public double Proportional { get; set; }
-        public double Integral { get; set; }
-        public double Derivative { get; set; }
 
         public int Speed { get; set; }
 

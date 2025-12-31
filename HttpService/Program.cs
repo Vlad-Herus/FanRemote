@@ -1,4 +1,5 @@
 using FanRemote.Interfaces;
+using FanRemote.Model;
 using FanRemote.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -79,6 +80,14 @@ public partial class Program
             return filtered;
         })
         .WithName("data");
+
+        app.MapPost("/speed", async (
+            [FromBody] SpeedRequest speedRequest,
+            FanControlConfiguration fanControlConfiguration) =>
+        {
+            fanControlConfiguration.ForcedSpeed = speedRequest.ForcedSpeed;
+        })
+        .WithName("speed");
 
         app.Run();
     }

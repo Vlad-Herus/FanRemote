@@ -1,5 +1,10 @@
 <template>
-    <button @click="addDataPoint('April', 50)">lalala2345</button>
+    <div class="slider">
+        <el-switch v-model="ForceSpeedEnabled" class="ml-2" width="110" inline-prompt active-text="Force Speed"
+            inactive-text="Force Speed" @change="onForceSpeedChange" />
+        <el-slider v-model="ForceSpeedValue" max="255" :disabled="!ForceSpeedEnabled" show-input
+            @change="onForceSpeedChange" />
+    </div>
     <canvas ref="chartCanvas"></canvas>
 </template>
 
@@ -8,6 +13,9 @@ import { onMounted, ref } from 'vue';
 import Chart from 'chart.js/auto'; // 'auto' registers all components automatically
 
 const chartCanvas = ref(null);
+const ForceSpeedEnabled = ref(false)
+const ForceSpeedValue = ref(0)
+
 var myCHart = null;
 var eTag = null;
 var labels = [];
@@ -35,30 +43,36 @@ onMounted(() => {
     });
 });
 
-function addDataPoint(label, newData) {
-    try {
-        console.log(myCHart.data);
-        // Push new label
-        labels.push(label);
+const onForceSpeedChange = (event) => {
+    var speed = null;
 
-        tempDataset.data.push(newData);
+    //TODO: this thows when slider is dragged violently to the right beyond the element border
+    if (ForceSpeedEnabled.value) {
+        speed = ForceSpeedValue.value;
+    }
+    else
+    {
+        ForceSpeedValue.value = 0;
+    }
 
-        //Push new data for each dataset
-        // myCHart.data.datasets.forEach((dataset) => {
-        //     dataset.data.push(newData);
-        // });
-        myCHart.update();
-        //refreshMyChart();
-        // Important: Tell Chart.js to update the chart
-        // If you are using raw Chart.js instance (e.g., this.myChart)
-        // you would call this.myChart.update();
-        // With vue-chartjs, ensure the component re-renders when chartData changes.
-        // The reactiveProp feature in older versions used a watcher on the whole object.
-        // In newer versions with Vue 3, simply mutating the reactive data works.
-    }
-    catch (error) {
-        console.log(error);
-    }
+    console.log(speed);
+
+    var data = { "forcedSpeed": speed }
+
+    fetch('speed', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+        .then(response => {
+            console.log("Speed set to " + speed);
+
+        })
+        .catch(error => {
+            console.error('Failed to set speed. error: ', error.message);
+        });
 }
 
 function pollPid() {
@@ -89,8 +103,7 @@ function pollPid() {
             });
         })
         .catch(error => {
-            // Handle network errors or the error thrown in the .then() block
-            console.error('Fetch error:', error.message);
+            console.error('Failed to fetch Temp data. error: ', error.message);
         });
 
     setTimeout(pollPid, 1000); // Delay of 0 ms puts it at the end of the current call stack
@@ -143,3 +156,21 @@ export default {
     }
 }
 </script>
+
+<style scoped>
+.slider {
+    max-width: 600px;
+    display: flex;
+    align-items: center;
+}
+
+.slider .el-slider {
+    margin-top: 0;
+    margin-left: 12px;
+}
+
+.slider .el-switch {
+    margin-right: 20px;
+    margin-left: 12px;
+}
+</style>

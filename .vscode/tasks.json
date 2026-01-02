@@ -22,7 +22,8 @@
             ],
             "group": {
                 "kind": "build"
-            }
+            },
+            "problemMatcher": "$tsc-watch"
         },
         {
             "label": "build Backend",
@@ -49,7 +50,8 @@
             "group": {
                 "kind": "build",
                 "isDefault": true
-            }
+            },
+            "problemMatcher": "$msCompile"
         },
         {
             "label": "run UI",
@@ -63,7 +65,8 @@
             ],
             "group": {
                 "kind": "build",
-            }
+            },
+            "problemMatcher": "$msCompile"
         }
     ]
 }

@@ -1,4 +1,5 @@
 using FanRemote.Interfaces;
+using Microsoft.Extensions.Options;
 
 namespace FanRemote.Services
 {
@@ -7,16 +8,19 @@ namespace FanRemote.Services
         private readonly ITempHistoryStore _TempHistoryStore;
         private readonly ITempDataCalculator _TempDataCalculator;
         private readonly ISpeedControl _speedControl;
+        private readonly IOptionsMonitor<FanControlOptions> _fanControlOptions;
         private bool _stopping;
 
         public GpuMonitoringHostedService(
-            ITempHistoryStore TempHistoryStore, 
+            ITempHistoryStore TempHistoryStore,
             ITempDataCalculator TempDataCalculator,
-            ISpeedControl speedControl)
+            ISpeedControl speedControl,
+            IOptionsMonitor<FanControlOptions> fanControlOptions)
         {
             _TempHistoryStore = TempHistoryStore;
             _TempDataCalculator = TempDataCalculator;
             _speedControl = speedControl;
+            _fanControlOptions = fanControlOptions;
         }
 
         public override Task StopAsync(CancellationToken cancellationToken)
@@ -29,14 +33,12 @@ namespace FanRemote.Services
         {
             while (_stopping is false)
             {
+                var options =_fanControlOptions.CurrentValue;
                 var pid = await _TempDataCalculator.Calculate(_TempHistoryStore.GetTemps(), stoppingToken);
                 pid.Speed = _speedControl.GetSpeed(pid);
                 _TempHistoryStore.LogTemp(pid);
 
-                if (pid.InError)
-                    await Task.Delay(1 * 1000);
-                else
-                    await Task.Delay(10 * 1000);
+                await Task.Delay(options.StepIntervalSeconds * 1000);
             }
         }
     }

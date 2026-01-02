@@ -1,3 +1,4 @@
+using System.Security.Cryptography.X509Certificates;
 using FanRemote.Interfaces;
 using FanRemote.Model;
 using FanRemote.Services;
@@ -16,6 +17,20 @@ public partial class Program
         builder.Host.UseSerilog((HostBuilderContext context, LoggerConfiguration loggerConfig) =>
           loggerConfig
                 .ReadFrom.Configuration(context.Configuration)
+                .Filter.ByExcluding(c =>
+                {
+                    if (!c.Properties.ContainsKey("RequestPath"))
+                        return false;
+                    bool data = c.Properties["RequestPath"].ToString().Trim("\"").StartsWith("/data");
+                    if (data)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                })
         );
 
         builder.Services.AddSpaStaticFiles(configuration => { configuration.RootPath = @"D:\Projects\FanRemote\ClientApp\dist\"; });

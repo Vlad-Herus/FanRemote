@@ -9,6 +9,7 @@
     documentation
   </p>
   <div id="lineDiv" style="width: 80%;">
+    <SpeedOverride />
     <LineChart />
   </div>
 
@@ -16,10 +17,11 @@
 
 <script>
 import LineChart from './components/LineChart.vue'
+import SpeedOverride from './components/SpeedOverride.vue';
 
 export default {
   name: 'App',
-  components: { LineChart }
+  components: { LineChart, SpeedOverride }
 }
 </script>
 

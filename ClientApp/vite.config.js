@@ -13,6 +13,8 @@ export default defineConfig({
     alias: {'@': fileURLToPath(new URL('./src', import.meta.url))},
   },
   build: {
+    outDir: '../HttpService/wwwroot',
+    emptyOutDir: true,
     minify: false,  // This disables minification entirely
   },
   define: {__VUE_PROD_DEVTOOLS__: true}

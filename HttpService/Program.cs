@@ -33,7 +33,7 @@ public partial class Program
                 })
         );
 
-        builder.Services.AddSpaStaticFiles(configuration => { configuration.RootPath = @"D:\Projects\FanRemote\ClientApp\dist\"; });
+        builder.Services.AddSpaStaticFiles(configuration => { configuration.RootPath = "wwwroot"; });
         // Add services to the container.
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();

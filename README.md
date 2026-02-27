@@ -76,6 +76,23 @@ pio run --target upload
 pio device monitor   # 115200 baud
 ```
 
+## VS Code
+
+| Action | How |
+|---|---|
+| Build frontend + backend | `Ctrl+Shift+B` (default build task: **build All**) |
+| Launch backend with debugger | `F5` (**Launch Backend**) |
+| Run a specific task | `Ctrl+Shift+P` → "Tasks: Run Task" |
+
+Available tasks:
+
+| Task | What it does |
+|---|---|
+| **build All** | Saves all files → builds frontend → builds backend |
+| **build Frontend** | Saves all files → `npm run build` in `ClientApp/` |
+| **build Backend** | Saves all files → `dotnet build HttpService` |
+| **run UI** | Builds frontend → `dotnet run --project HttpService` |
+
 ## Development
 
 ### HttpService (C#)

@@ -73,11 +73,7 @@ nvidia-smi → GpuTempSensor → TempDataCalculator → GpuMonitoringHostedServi
 "Kestrel": { "EndPoints": { "Http": { "Url": "http://*:6969" } } }
 ```
 
-SPA static files root is hardcoded in `Program.cs`:
-```csharp
-configuration.RootPath = @"D:\Projects\FanRemote\ClientApp\dist\";
-```
-Run `npm run build` in `ClientApp/` before starting the backend to serve the frontend.
+Run `npm run build` in `ClientApp/` before starting the backend — output goes to `HttpService/wwwroot/`, which is served as the SPA root and copied to the build output directory by the csproj.
 
 ## ESP32 Firmware Setup
 
